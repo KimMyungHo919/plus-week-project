@@ -1,10 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.dto.ReservationResponseDto;
-import com.example.demo.entity.Item;
-import com.example.demo.entity.RentalLog;
-import com.example.demo.entity.Reservation;
-import com.example.demo.entity.User;
+import com.example.demo.entity.*;
 import com.example.demo.exception.ReservationConflictException;
 import com.example.demo.repository.ItemRepository;
 import com.example.demo.repository.ReservationRepository;
@@ -14,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 
 
 @Service
@@ -45,7 +42,7 @@ public class ReservationService {
 
         Item item = itemRepository.findById(itemId).orElseThrow(() -> new IllegalArgumentException("해당 ID에 맞는 값이 존재하지 않습니다."));
         User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("해당 ID에 맞는 값이 존재하지 않습니다."));
-        Reservation reservation = new Reservation(item, user, "PENDING", startAt, endAt);
+        Reservation reservation = new Reservation(item, user, Status.PENDING, startAt, endAt);
         Reservation savedReservation = reservationRepository.save(reservation);
 
         RentalLog rentalLog = new RentalLog(savedReservation, "로그 메세지", "CREATE");
@@ -108,23 +105,29 @@ public class ReservationService {
     public void updateReservationStatus(Long reservationId, String status) {
         Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(() -> new IllegalArgumentException("해당 ID에 맞는 데이터가 존재하지 않습니다."));
 
-        if ("APPROVED".equals(status)) {
-            if (!"PENDING".equals(reservation.getStatus())) {
-                throw new IllegalArgumentException("PENDING 상태만 APPROVED로 변경 가능합니다.");
-            }
-            reservation.updateStatus("APPROVED");
-        } else if ("CANCELED".equals(status)) {
-            if ("EXPIRED".equals(reservation.getStatus())) {
-                throw new IllegalArgumentException("EXPIRED 상태인 예약은 취소할 수 없습니다.");
-            }
-            reservation.updateStatus("CANCELED");
-        } else if ("EXPIRED".equals(status)) {
-            if (!"PENDING".equals(reservation.getStatus())) {
-                throw new IllegalArgumentException("PENDING 상태만 EXPIRED로 변경 가능합니다.");
-            }
-            reservation.updateStatus("EXPIRED");
-        } else {
-            throw new IllegalArgumentException("올바르지 않은 상태: " + status);
+        switch (status) {
+            case "APPROVED":
+                if (!Objects.equals("PENDING", reservation.getStatus())) {
+                    throw new IllegalArgumentException("PENDING 상태만 APPROVED 로 변경 가능합니다.");
+                }
+                reservation.updateStatus(Status.APPROVED);
+                break;
+
+            case "CANCELED":
+                if (Objects.equals("EXPIRED", reservation.getStatus())) {
+                    throw new IllegalArgumentException("EXPIRED 상태인 예약은 취소할 수 없습니다.");
+                }
+                reservation.updateStatus(Status.CANCELED);
+                break;
+
+            case "EXPIRED":
+                if (!Objects.equals("PENDING", reservation.getStatus())) {
+                    throw new IllegalArgumentException("PENDING 상태만 EXPIRED 로 변경 가능합니다.");
+                }
+                reservation.updateStatus(Status.EXPIRED);
+                break;
+            default:
+                throw new IllegalArgumentException("올바르지 않은 상태: " + status);
         }
     }
 }
