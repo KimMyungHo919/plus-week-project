@@ -95,7 +95,7 @@ public class ReservationService {
 
     // TODO: 7. 리팩토링
     @Transactional
-    public void updateReservationStatus(Long reservationId, String status) {
+    public ReservationResponseDto updateReservationStatus(Long reservationId, String status) {
         Reservation reservation = reservationRepository.findReservationById(reservationId);
 
         switch (status) {
@@ -122,5 +122,13 @@ public class ReservationService {
             default:
                 throw new IllegalArgumentException("올바르지 않은 상태: " + status);
         }
+
+        return new ReservationResponseDto(
+                reservation.getId(),
+                reservation.getUser().getNickname(),
+                reservation.getItem().getName(),
+                reservation.getStartAt(),
+                reservation.getEndAt()
+        );
     }
 }
