@@ -13,6 +13,10 @@ import java.util.List;
 public interface UserRepository extends JpaRepository<User, Long> {
     User findByEmail(String email);
 
+    default User findUserById(Long userId) {
+        return findById(userId).orElseThrow(() -> new IllegalArgumentException("해당 ID에 맞는 값이 존재하지 않습니다."));
+    }
+
     @Modifying
     @Query("UPDATE User u SET u.status = 'BLOCKED' WHERE u.id IN :userIds")
     void blockUsersByIds(@Param("userIds") List<Long> userIds);

@@ -13,6 +13,10 @@ import java.util.Optional;
 @Repository
 public interface ReservationRepository extends JpaRepository<Reservation, Long>, ReservationRepositoryCustom {
 
+    default Reservation findReservationById(Long reservationId) {
+        return findById(reservationId).orElseThrow(() -> new IllegalArgumentException("해당 ID에 맞는 데이터가 존재하지 않습니다."));
+    }
+
     List<Reservation> findByUserIdAndItemId(Long userId, Long itemId);
 
     List<Reservation> findByUserId(Long userId);
