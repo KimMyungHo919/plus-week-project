@@ -36,7 +36,7 @@ public class ReservationService {
     public void createReservation(Long itemId, Long userId, LocalDateTime startAt, LocalDateTime endAt) {
         // 쉽게 데이터를 생성하려면 아래 유효성검사 주석 처리
         List<Reservation> haveReservations = reservationRepository.findConflictingReservations(itemId, startAt, endAt);
-        if(!haveReservations.isEmpty()) {
+        if (!haveReservations.isEmpty()) {
             throw new ReservationConflictException("해당 물건은 이미 그 시간에 예약이 있습니다.");
         }
 
@@ -69,19 +69,8 @@ public class ReservationService {
 
     // TODO: 5. QueryDSL 검색 개선
     public List<ReservationResponseDto> searchAndConvertReservations(Long userId, Long itemId) {
-
-        //List<Reservation> reservations = searchReservations(userId, itemId);
-
         List<Reservation> reservations = reservationRepository.searchReservations(userId, itemId);
 
-        return convertToDto(reservations);
-    }
-
-//    public List<Reservation> searchReservations(Long userId, Long itemId) {
-//        return reservationRepository.searchReservations(userId, itemId);
-//    }
-
-    private List<ReservationResponseDto> convertToDto(List<Reservation> reservations) {
         return reservations.stream()
                 .map(reservation -> new ReservationResponseDto(
                         reservation.getId(),
