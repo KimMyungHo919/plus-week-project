@@ -2,12 +2,14 @@ package com.example.demo.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.DynamicInsert;
 
 
 @Entity
 @Getter
 @DynamicInsert
+@Setter
 // TODO: 6. Dynamic Insert
 public class Item {
     @Id
