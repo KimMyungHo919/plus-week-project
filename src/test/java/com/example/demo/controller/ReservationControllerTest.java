@@ -1,7 +1,10 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.ReservationRequestDto;
 import com.example.demo.dto.ReservationResponseDto;
 import com.example.demo.service.ReservationService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,14 +33,17 @@ class ReservationControllerTest {
 
     @Test
     void createReservation() throws Exception {
-        String requestBody = """
-                    {
-                        "itemId": 1,
-                        "userId": 1,
-                        "startAt": "2024-12-20T10:00:00",
-                        "endAt": "2024-12-20T12:00:00"
-                    }
-                """;
+        // given
+        ReservationRequestDto requestDto = new ReservationRequestDto(
+                1L,
+                1L,
+                LocalDateTime.of(2024, 12, 20, 10, 0),
+                LocalDateTime.of(2024, 12, 20, 12, 0)
+        );
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule()); // LocalDateTime 직렬화 처리
+        String requestBody = objectMapper.writeValueAsString(requestDto);
 
         mockMvc.perform(post("/reservations") // 여기로 보낸다
                         .contentType("application/json") // 요청의 형식. (서버에서 받는 데이터형식)
@@ -58,14 +64,16 @@ class ReservationControllerTest {
                 LocalDateTime.of(2024, 12, 20, 12, 0)
         );
 
-        Mockito.when(reservationService.updateReservationStatus(reservationId, status))
+        Mockito.when(reservationService.updateReservationStatus(Mockito.eq(reservationId), Mockito.anyString()))
                 .thenReturn(responseDto);
 
-        mockMvc.perform(patch("/reservations/1/update-status")
+        mockMvc.perform(patch("/reservations/{id}/update-status", reservationId)
                         .contentType("application/json")
                         .content("\"APPROVED\""))
-                .andExpect(status().isOk());
-        // 여기를 더 채워넣고싶은데..
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("1"))
+                .andExpect(jsonPath("$.nickname").value("user1"))
+                .andExpect(jsonPath("$.itemName").value("item1"));
     }
 
     @Test
@@ -93,7 +101,14 @@ class ReservationControllerTest {
         mockMvc.perform(get("/reservations"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].nickname").value("user1"));
+
+                .andExpect(jsonPath("$[0].id").value("1"))
+                .andExpect(jsonPath("$[0].nickname").value("user1"))
+                .andExpect(jsonPath("$[0].itemName").value("item1"))
+
+                .andExpect(jsonPath("$[1].id").value("2"))
+                .andExpect(jsonPath("$[1].nickname").value("user2"))
+                .andExpect(jsonPath("$[1].itemName").value("item2"));
     }
 
 //    @Test
