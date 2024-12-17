@@ -1,7 +1,9 @@
 package com.example.demo.controller;
 
+import com.example.demo.constants.GlobalConstants;
 import com.example.demo.dto.ReservationRequestDto;
 import com.example.demo.dto.ReservationResponseDto;
+import com.example.demo.interceptor.UserRoleInterceptor;
 import com.example.demo.service.ReservationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -10,6 +12,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDateTime;
@@ -30,6 +33,9 @@ class ReservationControllerTest {
 
     @MockitoBean
     ReservationService reservationService;
+
+    @MockitoBean
+    UserRoleInterceptor userRoleInterceptor;
 
     @Test
     void createReservation() throws Exception {
@@ -111,23 +117,23 @@ class ReservationControllerTest {
                 .andExpect(jsonPath("$[1].itemName").value("item2"));
     }
 
-//    @Test
-//    void searchAll() throws Exception {
-//        List<ReservationResponseDto> reservations = List.of(
-//                new ReservationResponseDto(
-//                        1L,
-//                        "user1",
-//                        "item1",
-//                        LocalDateTime.of(2024, 12, 20, 10, 0),
-//                        LocalDateTime.of(2024, 12, 20, 12, 0)
-//                )
-//        );
-//
-//        Mockito.when(reservationService.searchAndConvertReservations(1L, 1L)).thenReturn(reservations);
-//
-//        mockMvc.perform(get("/reservations/search")
-//                        .param("userId", "1")
-//                        .param("itemId", "1"))
-//                .andExpect(status().isOk());
-//    }
+    @Test
+    void searchAll() throws Exception {
+        List<ReservationResponseDto> reservations = List.of(
+                new ReservationResponseDto(
+                        1L,
+                        "user1",
+                        "item1",
+                        LocalDateTime.of(2024, 12, 20, 10, 0),
+                        LocalDateTime.of(2024, 12, 20, 12, 0)
+                )
+        );
+
+        Mockito.when(reservationService.searchAndConvertReservations(Mockito.anyLong(), Mockito.anyLong())).thenReturn(reservations);
+
+        mockMvc.perform(get("/reservations/search")
+                        .param("userId", "1")
+                        .param("itemId", "1"))
+                .andExpect(status().isOk());
+    }
 }
