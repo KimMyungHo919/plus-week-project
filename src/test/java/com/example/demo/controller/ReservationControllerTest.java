@@ -14,6 +14,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -50,10 +52,11 @@ class ReservationControllerTest {
         objectMapper.registerModule(new JavaTimeModule()); // LocalDateTime 직렬화 처리
         String requestBody = objectMapper.writeValueAsString(requestDto);
 
-        mockMvc.perform(post("/reservations") // 여기로 보낸다
-                        .contentType(MediaType.APPLICATION_JSON) // 요청의 형식. (서버에서 받는 데이터형식)
-                        .content(requestBody)) // 요청의 본문. (위에서 작성한거)
-                .andExpect(status().isCreated()); // 응답.
+        ResultActions result = mockMvc.perform(post("/reservations") // 여기로 보낸다
+                .contentType(MediaType.APPLICATION_JSON) // 요청의 형식. (서버에서 받는 데이터형식)
+                .content(requestBody)); // 요청의 본문. (위에서 작성한거)
+
+        result.andExpect(status().isCreated()); // 응답.
     }
 
     @Test
@@ -72,10 +75,11 @@ class ReservationControllerTest {
         Mockito.when(reservationService.updateReservationStatus(Mockito.eq(reservationId), Mockito.anyString()))
                 .thenReturn(responseDto);
 
-        mockMvc.perform(patch("/reservations/{id}/update-status", reservationId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("\"APPROVED\""))
-                .andExpect(status().isOk())
+        ResultActions result = mockMvc.perform(patch("/reservations/{id}/update-status", reservationId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("\"APPROVED\""));
+
+        result.andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value("1"))
                 .andExpect(jsonPath("$.nickname").value("user1"))
                 .andExpect(jsonPath("$.itemName").value("item1"));
@@ -103,8 +107,9 @@ class ReservationControllerTest {
 
         Mockito.when(reservationService.getReservations()).thenReturn(reservations);
 
-        mockMvc.perform(get("/reservations"))
-                .andExpect(status().isOk())
+        ResultActions result = mockMvc.perform(get("/reservations"));
+
+        result.andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
 
                 .andExpect(jsonPath("$[0].id").value("1"))
@@ -130,9 +135,10 @@ class ReservationControllerTest {
 
         Mockito.when(reservationService.searchAndConvertReservations(Mockito.anyLong(), Mockito.anyLong())).thenReturn(reservations);
 
-        mockMvc.perform(get("/reservations/search")
-                        .param("userId", "1")
-                        .param("itemId", "1"))
-                .andExpect(status().isOk());
+        ResultActions result = mockMvc.perform(get("/reservations/search")
+                .param("userId", "1")
+                .param("itemId", "1"));
+
+        result.andExpect(status().isOk());
     }
 }
