@@ -1,6 +1,5 @@
 package com.example.demo.controller;
 
-import com.example.demo.constants.GlobalConstants;
 import com.example.demo.dto.ReservationRequestDto;
 import com.example.demo.dto.ReservationResponseDto;
 import com.example.demo.interceptor.UserRoleInterceptor;
@@ -12,7 +11,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.mock.web.MockHttpSession;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDateTime;
@@ -52,7 +51,7 @@ class ReservationControllerTest {
         String requestBody = objectMapper.writeValueAsString(requestDto);
 
         mockMvc.perform(post("/reservations") // 여기로 보낸다
-                        .contentType("application/json") // 요청의 형식. (서버에서 받는 데이터형식)
+                        .contentType(MediaType.APPLICATION_JSON) // 요청의 형식. (서버에서 받는 데이터형식)
                         .content(requestBody)) // 요청의 본문. (위에서 작성한거)
                 .andExpect(status().isCreated()); // 응답.
     }
@@ -74,7 +73,7 @@ class ReservationControllerTest {
                 .thenReturn(responseDto);
 
         mockMvc.perform(patch("/reservations/{id}/update-status", reservationId)
-                        .contentType("application/json")
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content("\"APPROVED\""))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value("1"))
