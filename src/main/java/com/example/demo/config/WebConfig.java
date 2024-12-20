@@ -1,15 +1,9 @@
 package com.example.demo.config;
 
-import com.example.demo.entity.Role;
-import com.example.demo.filter.AuthFilter;
-import com.example.demo.filter.RoleFilter;
 import com.example.demo.interceptor.AdminInterceptor;
 import com.example.demo.interceptor.AuthInterceptor;
 import com.example.demo.interceptor.UserRoleInterceptor;
-import jakarta.servlet.Filter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -41,32 +35,5 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(userRoleInterceptor)
                 .addPathPatterns(USER_ROLE_REQUIRED_PATH_PATTERNS)
                 .order(Ordered.HIGHEST_PRECEDENCE + 2);
-    }
-
-    @Bean
-    public FilterRegistrationBean authFilter() {
-        FilterRegistrationBean<Filter> filterRegistrationBean = new FilterRegistrationBean<>();
-        filterRegistrationBean.setFilter(new AuthFilter());
-        filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE);
-        filterRegistrationBean.addUrlPatterns(AUTH_REQUIRED_PATH_PATTERNS);
-        return filterRegistrationBean;
-    }
-
-    @Bean
-    public FilterRegistrationBean adminRoleFilter() {
-        FilterRegistrationBean<Filter> filterRegistrationBean = new FilterRegistrationBean<>();
-        filterRegistrationBean.setFilter(new RoleFilter(Role.ADMIN));
-        filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 1);
-        filterRegistrationBean.addUrlPatterns(ADMIN_ROLE_REQUIRED_PATH_PATTERNS);
-        return filterRegistrationBean;
-    }
-
-    @Bean
-    public FilterRegistrationBean userRoleFilter() {
-        FilterRegistrationBean<Filter> filterRegistrationBean = new FilterRegistrationBean<>();
-        filterRegistrationBean.setFilter(new RoleFilter(Role.USER));
-        filterRegistrationBean.setOrder(Ordered.HIGHEST_PRECEDENCE + 2);
-        filterRegistrationBean.addUrlPatterns(USER_ROLE_REQUIRED_PATH_PATTERNS);
-        return filterRegistrationBean;
     }
 }
