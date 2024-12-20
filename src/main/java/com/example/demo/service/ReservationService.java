@@ -87,29 +87,19 @@ public class ReservationService {
     public ReservationResponseDto updateReservationStatus(Long reservationId, String status) {
         Reservation reservation = reservationRepository.findReservationById(reservationId);
 
-        switch (status) {
-            case "APPROVED":
-                if (!Objects.equals(Status.PENDING, reservation.getStatus())) {
-                    throw new IllegalArgumentException("PENDING 상태만 APPROVED 로 변경 가능합니다.");
-                }
-                reservation.updateStatus(Status.APPROVED);
-                break;
 
-            case "CANCELED":
-                if (Objects.equals(Status.EXPIRED, reservation.getStatus())) {
-                    throw new IllegalArgumentException("EXPIRED 상태인 예약은 취소할 수 없습니다.");
-                }
-                reservation.updateStatus(Status.CANCELED);
-                break;
+        if ("APPROVED".equals(status) && Objects.equals(Status.PENDING, reservation.getStatus())) {
+            reservation.updateStatus(Status.APPROVED);
+        }
 
-            case "EXPIRED":
-                if (!Objects.equals(Status.PENDING, reservation.getStatus())) {
-                    throw new IllegalArgumentException("PENDING 상태만 EXPIRED 로 변경 가능합니다.");
-                }
-                reservation.updateStatus(Status.EXPIRED);
-                break;
-            default:
-                throw new IllegalArgumentException("올바르지 않은 상태: " + status);
+        if ("CANCELED".equals(status) && Objects.equals(Status.EXPIRED, reservation.getStatus())) {
+            reservation.updateStatus(Status.CANCELED);
+        }
+
+        if ("EXPIRED".equals(status) && Objects.equals(Status.PENDING, reservation.getStatus())) {
+            reservation.updateStatus(Status.EXPIRED);
+        } else {
+            throw new IllegalArgumentException("잘못된 요청입니다. : " + status);
         }
 
         return new ReservationResponseDto(
